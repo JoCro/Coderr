@@ -1,9 +1,8 @@
 from .offerviews import (
 
     OfferFilter,
-    OfferListCreateView,
-    OfferDetailView,
     OfferDetailItemView,
+    OfferViewSet
 
 )
 
@@ -33,8 +32,6 @@ from .reviewviews import (
 __all__ = [
 
     "OfferFilter",
-    "OfferListCreateView",
-    "OfferDetailView",
     "OfferDetailItemView",
     "OrderListCreateView",
     "OrderDetailView",
@@ -46,5 +43,6 @@ __all__ = [
     "ReviewListCreateView",
     "ReviewDetailView",
     "BaseInfoView",
+    "OfferViewSet",
 
 ]

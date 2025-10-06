@@ -6,6 +6,9 @@ env/
 *.log
 db.sqlite3
 db.sqlite3-journal
+media/
+staticfiles/
+offers/
 __pycache__/
 *.pyc
 *.pyo

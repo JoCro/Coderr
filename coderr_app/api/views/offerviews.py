@@ -1,4 +1,4 @@
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, viewsets
 from coderr_app.models import Offer, OfferDetail
 from ..serializers import OfferListSerializer, OfferCreateSerializer, OfferRetrieveSerializer, OfferUpdateSerializer, OfferDetailRetrieveSerializer
 from rest_framework.response import Response
@@ -34,69 +34,27 @@ class OfferFilter(filters.FilterSet):
         return queryset.filter(min_delivery_time__lte=value)
 
 
-class OfferListCreateView(generics.ListCreateAPIView):
+class OfferViewSet(viewsets.ModelViewSet):
     """
-    API view for listing and creating offers.
+    A CRUD ViewSet for the OFFER-Model. Gives correct permissions and serializers due to the Method which is used on the Endpoint
 
-    - GET: Returns a paginated, filterable, and searchable list of all offers.
-      Supports filters for creator, price, and delivery time.
-    - POST: Allows authenticated business users to create new offers with details.
-    - Uses custom pagination, filtering, and ordering.
-    - Prefetches related offer details and calculates minimum price and delivery time for efficiency.
-    - Used for /api/offers/ endpoint.
+        - list => GET /offers/
+        - retrieve => GET /offers/{id}/
+        - create => POST /offers/
+        - update => PUT/PATCH /offers/{id}/
+        - destroy => DELETE /offers/{id}/
     """
 
-    serializer_class = OfferListSerializer
+    lookup_field = "id"
+    parser_classes = (JSONParser, MultiPartParser, FormParser)
+    pagination_class = OfferListPagination
     filterset_class = OfferFilter
     search_fields = ["title", "description"]
     ordering_fields = ["updated_at", "min_price"]
     ordering = ["-updated_at"]
-    parser_classes = [JSONParser, MultiPartParser, FormParser]
-    pagination_class = OfferListPagination
-
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.IsAuthenticated(), IsBusinessUser()]
-        return []
 
     def get_queryset(self):
-        qs = (Offer.objects
-              .select_related("user")
-              .prefetch_related("details")
-              .annotate(
-                  min_price=Min("details__price"),
-                  min_delivery_time=Min("details__delivery_time"),
-              )
 
-              )
-
-        for o in qs:
-            o._prefetched_details = list(o.details.all())
-        return qs
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return OfferCreateSerializer
-        return super().get_serializer_class()
-
-
-class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    API view for retrieving, updating, and deleting a specific offer.
-
-    - GET: Returns detailed information about an offer, including related details.
-    - PATCH: Allows the offer creator to partially update the offer and its details.
-    - DELETE: Permits only the creator to delete the offer.
-    - Ensures ownership-based access control (403 if unauthorized).
-    - Annotates minimum price and delivery time for optimized retrieval.
-    - Used for /api/offers/{id}/ endpoint.
-    """
-
-    permission_classes = [permissions.IsAuthenticated]
-    lookup_field = "id"
-    lookup_url_kwarg = "id"
-
-    def get_queryset(self):
         return (
             Offer.objects
             .select_related("user")
@@ -107,25 +65,48 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
             )
         )
 
+    def get_permissions(self):
+        if self.action == "list":
+            return []
+        if self.action == "retrieve":
+            return [permissions.IsAuthenticated()]
+        if self.action == "create":
+            return [permissions.IsAuthenticated(), IsBusinessUser()]
+        if self.action in ("update", "partial_update", "destroy"):
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAuthenticated()]
+
     def get_serializer_class(self):
-        if self.request.method == "PATCH":
+        if self.action == "list":
+            return OfferListSerializer
+        if self.action == "retrieve":
+            return OfferRetrieveSerializer
+        if self.action == "create":
+            return OfferCreateSerializer
+        if self.action in ("update", "partial_update"):
             return OfferUpdateSerializer
-        return OfferRetrieveSerializer
+        return OfferListSerializer
 
-    def patch(self, request, *args, **kwargs):
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def update(self, request, *args, **kwargs):
         offer = self.get_object()
         if request.user.id != offer.user_id:
-            return Response({"detail": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
-        return super().patch(request, *args, **kwargs)
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN,)
+        return super().update(request, *args, **kwargs)
 
-    def delete(self, request, *args, **kwargs):
+    def partial_update(self, request, *args, **kwargs):
         offer = self.get_object()
         if request.user.id != offer.user_id:
-            return Response({"detail": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
-        self.perform_destroy(offer)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"detail": "You do not have permission to perform this action"}, status=status.HTTP_403_FORBIDDEN,)
+        return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        offer = self.get_object()
+        if request.user.id != offer.user_id:
+            return Response({"detail": "You do not have permission to perform this action"}, status=status.HTTP_403_FORBIDDEN,)
+        return super().destroy(request, *args, **kwargs)
 
 
 class OfferDetailItemView(generics.RetrieveAPIView):
