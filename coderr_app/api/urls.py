@@ -1,10 +1,12 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProfileView, BusinessProfileView, CustomerProfileView, OfferDetailItemView, OrderListCreateView, OrderDetailView, OrderCountView, CompletedOrderCountView, ReviewListCreateView, ReviewDetailView, BaseInfoView, OfferViewSet
+from .views import ProfileView, BusinessProfileView, CustomerProfileView, OfferDetailItemView, OrderListCreateView, OrderDetailView, OrderCountView, CompletedOrderCountView,  BaseInfoView, OfferViewSet, ReviewViewSet
 
 router = DefaultRouter()
 router.register(r"offers", OfferViewSet, basename="offer")
+router.register(r"reviews", ReviewViewSet, basename="review")
+
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -23,7 +25,7 @@ urlpatterns = [
          OrderCountView.as_view(), name="order-count"),
     path("completed-order-count/<int:business_user_id>/",
          CompletedOrderCountView.as_view(), name="completed-order-count"),
-    path("reviews/", ReviewListCreateView.as_view(), name="review-list-create"),
-    path("reviews/<int:id>/", ReviewDetailView.as_view(), name="review-detail"),
+    #     path("reviews/", ReviewListCreateView.as_view(), name="review-list-create"),
+    #     path("reviews/<int:id>/", ReviewDetailView.as_view(), name="review-detail"),
     path("base-info/", BaseInfoView.as_view(), name="base-info"),
 ]

@@ -23,9 +23,10 @@ from .profileviews import (
 
 from .reviewviews import (
 
-    ReviewListCreateView,
-    ReviewDetailView,
+    # ReviewListCreateView,
+    # ReviewDetailView,
     BaseInfoView,
+    ReviewViewSet,
 )
 
 
@@ -40,8 +41,9 @@ __all__ = [
     "ProfileView",
     "BusinessProfileView",
     "CustomerProfileView",
-    "ReviewListCreateView",
-    "ReviewDetailView",
+    # "ReviewListCreateView",
+    "ReviewViewSet",
+    # "ReviewDetailView",
     "BaseInfoView",
     "OfferViewSet",
 

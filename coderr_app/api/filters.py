@@ -15,7 +15,8 @@ class ReviewFilter(filters.FilterSet):
     """
     business_user_id = filters.NumberFilter(field_name="business_user_id")
     reviewer_id = filters.NumberFilter(field_name="reviewer_id")
+    offer_id = filters.NumberFilter(field_name="offer_id")
 
     class Meta:
         model = Review
-        fields = ["business_user_id", "reviewer_id"]
+        fields = ["business_user_id", "reviewer_id", "offer_id"]

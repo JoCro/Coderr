@@ -59,9 +59,9 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        reviewer = self.context["request"].user
-        review = Review.objects.create(reviewer=reviewer, **validated_data)
-        return review
+        reviewer = validated_data.pop("reviewer", None)
+
+        return Review.objects.create(reviewer=reviewer, **validated_data)
 
 
 class ReviewUpdateSerializer(serializers.ModelSerializer):
@@ -89,3 +89,7 @@ class ReviewUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Provide at least one of: 'rating' or 'description'.")
         return attrs
+
+    def update(self, instance, validated_data):
+        validated_data.pop("reviewer", None)
+        return super().update(instance, validated_data)
