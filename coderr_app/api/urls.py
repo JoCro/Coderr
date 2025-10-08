@@ -15,8 +15,6 @@ urlpatterns = [
          name='business-profile-list'),
     path('profiles/customer/', CustomerProfileView.as_view(),
          name='customer-profile-list'),
-    #     path("offers/", OfferListCreateView.as_view(), name="offer-list-create"),
-    #     path("offers/<int:id>/", OfferDetailView.as_view(), name="offer-detail"),
     path("offerdetails/<int:id>/", OfferDetailItemView.as_view(),
          name="offer-detail-item"),
     path("orders/", OrderListCreateView.as_view(), name="order-list-create"),
@@ -25,7 +23,5 @@ urlpatterns = [
          OrderCountView.as_view(), name="order-count"),
     path("completed-order-count/<int:business_user_id>/",
          CompletedOrderCountView.as_view(), name="completed-order-count"),
-    #     path("reviews/", ReviewListCreateView.as_view(), name="review-list-create"),
-    #     path("reviews/<int:id>/", ReviewDetailView.as_view(), name="review-detail"),
     path("base-info/", BaseInfoView.as_view(), name="base-info"),
 ]
